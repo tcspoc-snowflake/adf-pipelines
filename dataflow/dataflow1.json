@@ -1,0 +1,71 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Sf_customer_data",
+						"type": "DatasetReference"
+					},
+					"name": "srccustomer"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "sf_agg_cust",
+						"type": "DatasetReference"
+					},
+					"name": "sfaggcustomer"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "sortasc"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          EMAIL as string,",
+				"          ADDRESS as string,",
+				"          AVATAR as string,",
+				"          AVG_SESSION_LENGTH as decimal(30,15),",
+				"          TIME_ON_APP as decimal(30,15),",
+				"          TIME_ON_WEBSITE as decimal(30,15),",
+				"          LENGTH_OF_MEMBERSHIP as decimal(30,15),",
+				"          YEARLY_AMOUNT_SPENT as decimal(30,15)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     limit: 100,",
+				"     format: 'table') ~> srccustomer",
+				"srccustomer aggregate(groupBy(Avatar = AVATAR),",
+				"     EMAIL = count(EMAIL)) ~> aggregate1",
+				"aggregate1 sort(asc(Avatar, true)) ~> sortasc",
+				"sortasc sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          AVATAR as string,",
+				"          COUNT_OF_EMAIL as decimal(10,0)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          AVATAR = Avatar,",
+				"          COUNT_OF_EMAIL = EMAIL",
+				"     )) ~> sfaggcustomer"
+			]
+		}
+	}
+}

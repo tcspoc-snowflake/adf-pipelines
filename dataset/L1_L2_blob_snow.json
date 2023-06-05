@@ -1,0 +1,42 @@
+{
+	"name": "L1_L2_blob_snow",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_public_poc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "NUMBER",
+				"precision": 38,
+				"scale": 0
+			},
+			{
+				"name": "LAYER_ID",
+				"type": "VARCHAR",
+				"precision": 200,
+				"scale": 0
+			},
+			{
+				"name": "SQL_QUERY",
+				"type": "VARCHAR",
+				"precision": 0,
+				"scale": 0
+			},
+			{
+				"name": "DEPENDENCY",
+				"type": "NUMBER",
+				"precision": 38,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "S_STAGE",
+			"table": "LAYER_MAPPING_TABLE"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

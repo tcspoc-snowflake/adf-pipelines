@@ -1,0 +1,32 @@
+{
+	"name": "Airflow-DBT",
+	"properties": {
+		"type": "Airflow",
+		"description": "Airflow environment connecting to dbt cloud and ADF",
+		"typeProperties": {
+			"computeProperties": {
+				"location": "East US",
+				"computeSize": "Small",
+				"extraNodes": 0
+			},
+			"airflowProperties": {
+				"airflowVersion": "2.4.3",
+				"airflowWebUrl": "https://da960018201685.eastus.airflow.svc.datafactory.azure.com/login/",
+				"environmentVariables": {
+					"Account_ID": "172514",
+					"Job_ID": "323527"
+				},
+				"airflowRequirements": [
+					"apache-airflow-providers-dbt-cloud",
+					"apache-airflow-providers-microsoft-azure",
+					"apache-airflow-providers-databricks"
+				],
+				"enableAADIntegration": true,
+				"airflowEntityReferences": [],
+				"packageProviderPath": "plugins",
+				"encryptedSecrets": [],
+				"secrets": []
+			}
+		}
+	}
+}

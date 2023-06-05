@@ -1,0 +1,66 @@
+{
+	"name": "SF_CUSTOMER",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sf_public_poc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeTable",
+		"schema": [
+			{
+				"name": "EMAIL",
+				"type": "VARCHAR",
+				"precision": 50,
+				"scale": 0
+			},
+			{
+				"name": "ADDRESS",
+				"type": "VARCHAR",
+				"precision": 244,
+				"scale": 0
+			},
+			{
+				"name": "AVATAR",
+				"type": "VARCHAR",
+				"precision": 50,
+				"scale": 0
+			},
+			{
+				"name": "AVG_SESSION_LENGTH",
+				"type": "FLOAT",
+				"precision": 15,
+				"scale": 0
+			},
+			{
+				"name": "TIME_ON_APP",
+				"type": "FLOAT",
+				"precision": 15,
+				"scale": 0
+			},
+			{
+				"name": "TIME_ON_WEBSITE",
+				"type": "FLOAT",
+				"precision": 15,
+				"scale": 0
+			},
+			{
+				"name": "LENGTH_OF_MEMBERSHIP",
+				"type": "FLOAT",
+				"precision": 15,
+				"scale": 0
+			},
+			{
+				"name": "YEARLY_AMOUNT_SPENT",
+				"type": "FLOAT",
+				"precision": 15,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "STAGE",
+			"table": "CUSTOMER"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

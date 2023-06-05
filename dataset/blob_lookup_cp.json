@@ -1,0 +1,36 @@
+{
+	"name": "blob_lookup_cp",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_public_poc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeTable",
+		"schema": [
+			{
+				"name": "SOURCEFILENAME",
+				"type": "VARCHAR",
+				"precision": 200,
+				"scale": 0
+			},
+			{
+				"name": "TABLENAME",
+				"type": "VARCHAR",
+				"precision": 200,
+				"scale": 0
+			},
+			{
+				"name": "COLUMNMAPPING",
+				"type": "VARCHAR",
+				"precision": 0,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "S_STAGE",
+			"table": "BLOB_MAPPING_TABLE"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

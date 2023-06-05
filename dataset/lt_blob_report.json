@@ -1,0 +1,32 @@
+{
+	"name": "lt_blob_report",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sf_blob",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"sourcefilename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().sourcefilename",
+					"type": "Expression"
+				},
+				"container": "sf-bbt"
+			},
+			"columnDelimiter": ",",
+			"rowDelimiter": "\r",
+			"escapeChar": "\\",
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

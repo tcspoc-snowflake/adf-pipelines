@@ -1,0 +1,30 @@
+{
+	"name": "sf_agg_cust",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_public_poc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeTable",
+		"schema": [
+			{
+				"name": "AVATAR",
+				"type": "VARCHAR",
+				"precision": 50,
+				"scale": 0
+			},
+			{
+				"name": "COUNT_OF_EMAIL",
+				"type": "NUMBER",
+				"precision": 10,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "S_STAGE",
+			"table": "AGG_CUST"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,179 @@
+{
+	"name": "ADLS_TO_SF",
+	"properties": {
+		"activities": [
+			{
+				"name": "ADLS_2_SF",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SnowflakeSink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "sf_blob",
+							"type": "LinkedServiceReference"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Email",
+									"type": "String"
+								},
+								"sink": {
+									"name": "EMAIL",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Address",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ADDRESS",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Avatar",
+									"type": "String"
+								},
+								"sink": {
+									"name": "AVATAR",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Avg_Session_Length",
+									"type": "String"
+								},
+								"sink": {
+									"name": "AVG_SESSION_LENGTH",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Time_on_App",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TIME_ON_APP",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Time_on_Website",
+									"type": "String"
+								},
+								"sink": {
+									"name": "TIME_ON_WEBSITE",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Length_of_Membership",
+									"type": "String"
+								},
+								"sink": {
+									"name": "LENGTH_OF_MEMBERSHIP",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Yearly_Amount_Spent",
+									"type": "String"
+								},
+								"sink": {
+									"name": "YEARLY_AMOUNT_SPENT",
+									"type": "Int64"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "customeradls",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Sf_customer_data",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "aggfunc",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "ADLS_2_SF",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Snowflake_public_poc",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "insert into s_stage.agg_cust (Avatar,count_of_email)\nselect Avatar,count(email)\nfrom s_stage.customer\ngroup by Avatar\norder by Avatar;"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-05-31T07:26:14Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

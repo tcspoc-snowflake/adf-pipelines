@@ -1,0 +1,36 @@
+{
+	"name": "Delta_sf",
+	"properties": {
+		"activities": [
+			{
+				"name": "Script1",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "delta_sf",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "CREATE OR REPLACE EXTERNAL TABLE public.DF_customer(\n    id STRING AS (VALUE:ID::STRING),\n    Name STRING AS (VALUE:Name::STRING),\n    Address STRING AS (VALUE:Address::STRING),\n    City STRING AS (VALUE:City::STRING),\n    PostCode INT AS (VALUE:PostCode::INT),\n    State STRING AS (VALUE:State::STRING),\n    Company STRING AS (VALUE:Company::STRING),\n    Contact STRING AS (VALUE:Contact::STRING)\n  )\n  WITH LOCATION = @public.azure_stage_df/\n  FILE_FORMAT = (TYPE = PARQUET)\n -- PATTERN = '.*[/]part-[^/]*[.]parquet'\n  TABLE_FORMAT = DELTA\n  AUTO_REFRESH = false\n  REFRESH_ON_CREATE = false;\n  \n  desc table public.DF_customer;\n\n  \n  alter external table public.DF_customer refresh;\n  \n  select * from public.DF_customer;\n"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-05-31T11:45:02Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

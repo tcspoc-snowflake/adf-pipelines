@@ -1,0 +1,12 @@
+{
+	"name": "snowflakeprivatelink",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/ae0c1e4e-d49e-4115-b3ba-888d77ea97a3/resourceGroups/azeastus2-privatelink/providers/Microsoft.Network/privateLinkServices/sf-pvlinksvc-azeastus2",
+		"groupId": "",
+		"fqdns": [
+			"ocsp.ev72882.east-us-2.privatelink.snowflakecomputing.com",
+			"ytmtget-kc83353.privatelink.snowflakecomputing.com",
+			"ev72882.east-us-2.privatelink.snowflakecomputing.com"
+		]
+	}
+}

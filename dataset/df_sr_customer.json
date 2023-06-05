@@ -1,0 +1,58 @@
+{
+	"name": "df_sr_customer",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sf_blob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "customer.csv",
+				"container": "sf-bbt"
+			},
+			"columnDelimiter": ",",
+			"rowDelimiter": "\r",
+			"escapeChar": "\"",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Email",
+				"type": "String"
+			},
+			{
+				"name": "Address",
+				"type": "String"
+			},
+			{
+				"name": "Avatar",
+				"type": "String"
+			},
+			{
+				"name": "Avg_Session_Length",
+				"type": "String"
+			},
+			{
+				"name": "Time_on_App",
+				"type": "String"
+			},
+			{
+				"name": "Time_on_Website",
+				"type": "String"
+			},
+			{
+				"name": "Length_of_Membership",
+				"type": "String"
+			},
+			{
+				"name": "Yearly_Amount_Spent",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

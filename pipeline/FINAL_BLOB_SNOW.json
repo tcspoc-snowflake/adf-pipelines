@@ -1,0 +1,180 @@
+{
+	"name": "FINAL_BLOB_SNOW",
+	"properties": {
+		"activities": [
+			{
+				"name": "MappingLookup",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SnowflakeSource",
+						"exportSettings": {
+							"type": "SnowflakeExportCopyCommand"
+						}
+					},
+					"dataset": {
+						"referenceName": "Sf_customer_data",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "RAW_L0_DATA_COPY",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "MappingLookup",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@array(activity('MappingLookup').output.value)",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 5,
+					"activities": [
+						{
+							"name": "BLOB_TO_SNOW",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "SnowflakeSink",
+									"importSettings": {
+										"type": "SnowflakeImportCopyCommand"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"value": "@json(item().columnmapping)",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "lt_blob_report",
+									"type": "DatasetReference",
+									"parameters": {
+										"sourcefilename": "@item().sourcefilename"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "sink_snow",
+									"type": "DatasetReference",
+									"parameters": {
+										"tablename": "@item().tablename"
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "L1_L2_Data_pipeline",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "RAW_L0_DATA_COPY",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Snowflake_public_poc",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "insert into STAGE_DATA.s_stage.DIM_CUSTOMER (CUSTOMER_ID,CUSTOMER_NAME,SEGMENT,COUNTRY,CITY,O_STATE,POSTALCODE,REGION)\nselect CUSTOMER_ID,CUSTOMER_NAME,SEGMENT,COUNTRY,CITY,STATE,POSTALCODE,REGION\nfrom STAGE_DATA.s_stage.RAW_CUSTOMER;\n\ninsert into STAGE_DATA.s_stage.DIM_PRODUCT (PRODUCT_ID,CUSTOMER_ID,CATEGORY,SUB_CATEGORY,PRODUCT_NAME,REGION)\nselect PRODUCT_ID,CUSTOMER_ID,CATEGORY,SUB_CATEGORY,PRODUCT_NAME,REGION\nfrom STAGE_DATA.s_stage.RAW_CUSTOMER;\n\ninsert into STAGE_DATA.s_stage.FACT_ORDERS (ROW_ID,ORDER_ID,ORDER_DATE,SHIPDATE,SHIPMODE,SALES,QUANTITY,DISCOUNT,PROFIT,PRODUCT_ID)\nselect ROW_ID,ORDER_ID,ORDER_DATE,Ship_Date,Ship_Mode,SALES,QUANTITY,DISCOUNT,PROFIT,PRODUCT_ID\nfrom STAGE_DATA.s_stage.RAW_CUSTOMER;"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "AGG_L2_ORDERS",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "L1_L2_Data_pipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Snowflake_public_poc",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "insert into STAGE_DATA.s_stage.AGG_L2_ORDERS (\nYearMonthNum,month_name,Calendar_Quarter,\ntotal_customers,person,region,country,category,total_orders,\ntotal_returned_orders,total_sales,total_Quantity,total_discount,total_Profit,\nreturned_sales,returned_Quantity,returned_Discount,returned_Profit)\nselect \n        C.YearMonthNum,\n        C.month_name,\n        C.Calendar_Quarter,\n        count(D.CUSTOMER_ID) as total_customers,\n        P.person as person, \n        D.REGION as region,\n\t\tD.COUNTRY as country,\n\t\tE.CATEGORY as category,\n\t\tcount(B.ORDER_ID) as total_orders,\n        count( A.order_id) as total_returned_orders,\n        sum(b.sales) as total_sales,\n        sum(b.Quantity) as total_Quantity,\n\t\tsum(b.Discount) as total_discount,\n        sum(b.Profit) as total_Profit,\n\t\tsum(case when a.returned = 'Yes' then b.Sales else 0 end) as returned_sales,\n        sum(case when a.returned = 'Yes' then b.Quantity else 0 end) as returned_Quantity,\n        sum(case when a.returned = 'Yes' then b.Discount else 0 end) as returned_Discount,\n        sum(case when a.returned = 'Yes' then b.Profit else 0 end) as returned_Profit\n    \n      from STAGE_DATA.s_stage.dim_people P\n      inner join STAGE_DATA.s_stage.dim_customer D on P.people_region=D.REGION\n      inner join STAGE_DATA.s_stage.dim_product E on D.CUSTOMER_ID=E.CUSTOMER_ID\n      inner join STAGE_DATA.s_stage.fact_orders B on B.product_id=E.product_id\n      right outer join STAGE_DATA.s_stage.FACT_RETURNS A on A.order_id=B.order_id\n      inner join STAGE_DATA.s_stage.dim_datemmyy C on C.date=B.ORDER_DATE\n\n      Group By \n     \n\t\tC.YearMonthNum,\n        C.month_name,\n        C.Calendar_Quarter,\n        D.REGION,\n\t\tD.COUNTRY,\n\t\tE.CATEGORY,\n        P.person;"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-05-31T07:26:14Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

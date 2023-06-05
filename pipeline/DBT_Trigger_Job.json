@@ -1,0 +1,174 @@
+{
+	"name": "DBT_Trigger_Job",
+	"properties": {
+		"activities": [
+			{
+				"name": "run_dbt_job",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "https://cloud.getdbt.com/api/v2/accounts/@{pipeline().parameters.Account_ID}/jobs/@{pipeline().parameters.Job_ID}/run/",
+						"type": "Expression"
+					},
+					"method": "POST",
+					"headers": {
+						"Accept": "Application/Json",
+						"Authorization": "Token 07811669ac9cd332f7253e0bba8c770c64b09270"
+					},
+					"body": {
+						"cause": "Triggered via ADF Pipeline"
+					}
+				}
+			},
+			{
+				"name": "get_dbt_run_id",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "run_dbt_job",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "run_id",
+					"value": {
+						"value": "@String(activity('run_dbt_job').output.data.id)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "until_dbt_job_finishes",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "get_dbt_run_id",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Check_Status').output.data.is_complete,true)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Wait_60s",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 60
+							}
+						},
+						{
+							"name": "Check_Status",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Wait_60s",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": {
+									"value": "https://cloud.getdbt.com/api/v2/accounts/@{pipeline().parameters.Account_ID}/runs/@{variables('run_id')}/",
+									"type": "Expression"
+								},
+								"method": "GET",
+								"headers": {
+									"Accept": "application/json",
+									"Authorization": "Token 07811669ac9cd332f7253e0bba8c770c64b09270"
+								}
+							}
+						},
+						{
+							"name": "Evaluate_Status",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "Check_Status",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@or(activity('Check_Status').output.data.in_progress,and(activity('Check_Status').output.data.is_complete,activity('Check_Status').output.data.is_success))",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Fail",
+										"type": "Fail",
+										"dependsOn": [],
+										"userProperties": [],
+										"typeProperties": {
+											"message": {
+												"value": "@activity('Check_Status').output.status.user_message",
+												"type": "Expression"
+											},
+											"errorCode": {
+												"value": "@activity('Check_Status').output.status.code",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"Account_ID": {
+				"type": "string",
+				"defaultValue": "169380"
+			},
+			"Job_ID": {
+				"type": "string",
+				"defaultValue": "299389"
+			}
+		},
+		"variables": {
+			"run_id": {
+				"type": "String"
+			},
+			"job_status": {
+				"type": "Boolean"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-05-17T08:04:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

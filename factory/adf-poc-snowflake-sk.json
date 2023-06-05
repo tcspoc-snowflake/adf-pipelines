@@ -1,0 +1,9 @@
+{
+	"name": "adf-poc-snowflake-sk",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "5e750b9f-046f-408d-b90e-ed312d76034f",
+		"tenantId": "3729b040-caed-4a8b-b299-2f736618840e"
+	}
+}

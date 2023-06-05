@@ -1,0 +1,17 @@
+{
+	"name": "L0_snow_cp",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Snowflake_public_poc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "S_STAGE",
+			"table": "BLOB_MAPPING_TABLE"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

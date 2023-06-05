@@ -1,0 +1,342 @@
+{
+	"name": "LT_ADLS_TO_SF",
+	"properties": {
+		"activities": [
+			{
+				"name": "RAW_L0_DATA_COPY",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "SnowflakeSink",
+						"importSettings": {
+							"type": "SnowflakeImportCopyCommand"
+						}
+					},
+					"enableStaging": true,
+					"stagingSettings": {
+						"linkedServiceName": {
+							"referenceName": "sf_blob",
+							"type": "LinkedServiceReference"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "Row ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ROW_ID",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Order ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ORDER_ID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Order Date",
+									"type": "String"
+								},
+								"sink": {
+									"name": "ORDER_DATE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Ship Date",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SHIP_DATE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Ship Mode",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SHIP_MODE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Customer ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CUSTOMER_ID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Customer Name",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CUSTOMER_NAME",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Segment",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SEGMENT",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Country",
+									"type": "String"
+								},
+								"sink": {
+									"name": "COUNTRY",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "City",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CITY",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "State",
+									"type": "String"
+								},
+								"sink": {
+									"name": "STATE",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Postal Code",
+									"type": "String"
+								},
+								"sink": {
+									"name": "POSTALCODE",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Region",
+									"type": "String"
+								},
+								"sink": {
+									"name": "REGION",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Product ID",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PRODUCT_ID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Category",
+									"type": "String"
+								},
+								"sink": {
+									"name": "CATEGORY",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Sub-Category",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SUB_CATEGORY",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Product Name",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PRODUCT_NAME",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"name": "Sales",
+									"type": "String"
+								},
+								"sink": {
+									"name": "SALES",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Quantity",
+									"type": "String"
+								},
+								"sink": {
+									"name": "QUANTITY",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Discount",
+									"type": "String"
+								},
+								"sink": {
+									"name": "DISCOUNT",
+									"type": "Int64"
+								}
+							},
+							{
+								"source": {
+									"name": "Profit",
+									"type": "String"
+								},
+								"sink": {
+									"name": "PROFIT",
+									"type": "Int64"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "customeradls",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Sf_customer_data",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "FACT_DIM_ORDERS",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "RAW_L0_DATA_COPY",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Snowflake_public_poc",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "insert into STAGE_DATA.s_stage.DIM_CUSTOMER (CUSTOMER_ID,CUSTOMER_NAME,SEGMENT,COUNTRY,CITY,O_STATE,POSTALCODE,REGION)\nselect CUSTOMER_ID,CUSTOMER_NAME,SEGMENT,COUNTRY,CITY,STATE,POSTALCODE,REGION\nfrom STAGE_DATA.s_stage.RAW_CUSTOMER;\n\ninsert into STAGE_DATA.s_stage.DIM_PRODUCT (PRODUCT_ID,CUSTOMER_ID,CATEGORY,SUB_CATEGORY,PRODUCT_NAME,REGION)\nselect PRODUCT_ID,CUSTOMER_ID,CATEGORY,SUB_CATEGORY,PRODUCT_NAME,REGION\nfrom STAGE_DATA.s_stage.RAW_CUSTOMER;\n\ninsert into STAGE_DATA.s_stage.FACT_ORDERS (ROW_ID,ORDER_ID,ORDER_DATE,SHIPDATE,SHIPMODE,SALES,QUANTITY,DISCOUNT,PROFIT,PRODUCT_ID)\nselect ROW_ID,ORDER_ID,ORDER_DATE,Ship_Date,Ship_Mode,SALES,QUANTITY,DISCOUNT,PROFIT,PRODUCT_ID\nfrom STAGE_DATA.s_stage.RAW_CUSTOMER;"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "AGG_L2_ORDERS",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "FACT_DIM_ORDERS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Snowflake_public_poc",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "insert into STAGE_DATA.s_stage.AGG_L2_ORDERS (\nYearMonthNum,month_name,Calendar_Quarter,\ntotal_customers,person,region,country,category,total_orders,\ntotal_returned_orders,total_sales,total_Quantity,total_discount,total_Profit,\nreturned_sales,returned_Quantity,returned_Discount,returned_Profit)\nselect \n        C.YearMonthNum,\n        C.month_name,\n        C.Calendar_Quarter,\n        count(D.CUSTOMER_ID) as total_customers,\n        P.person as person, \n        D.REGION as region,\n\t\tD.COUNTRY as country,\n\t\tE.CATEGORY as category,\n\t\tcount(B.ORDER_ID) as total_orders,\n        count( A.order_id) as total_returned_orders,\n        sum(b.sales) as total_sales,\n        sum(b.Quantity) as total_Quantity,\n\t\tsum(b.Discount) as total_discount,\n        sum(b.Profit) as total_Profit,\n\t\tsum(case when a.returned = 'Yes' then b.Sales else 0 end) as returned_sales,\n        sum(case when a.returned = 'Yes' then b.Quantity else 0 end) as returned_Quantity,\n        sum(case when a.returned = 'Yes' then b.Discount else 0 end) as returned_Discount,\n        sum(case when a.returned = 'Yes' then b.Profit else 0 end) as returned_Profit\n    \n      from STAGE_DATA.s_stage.dim_people P\n      inner join STAGE_DATA.s_stage.dim_customer D on P.people_region=D.REGION\n      inner join STAGE_DATA.s_stage.dim_product E on D.CUSTOMER_ID=E.CUSTOMER_ID\n      inner join STAGE_DATA.s_stage.fact_orders B on B.product_id=E.product_id\n      right outer join STAGE_DATA.s_stage.FACT_RETURNS A on A.order_id=B.order_id\n      inner join STAGE_DATA.s_stage.dim_datemmyy C on C.date=B.ORDER_DATE\n\n      Group By \n     \n\t\tC.YearMonthNum,\n        C.month_name,\n        C.Calendar_Quarter,\n        D.REGION,\n\t\tD.COUNTRY,\n\t\tE.CATEGORY,\n        P.person;"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-05-31T07:26:14Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
